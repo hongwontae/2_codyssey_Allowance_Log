@@ -5,6 +5,7 @@ from pathlib import Path
 from budget_app.models import Transaction
 from budget_app.repository import TransactionRepository
 from budget_app.repository import CategoryRepository
+from budget_app.repository import BudgetRepository
 
 
 class TransactionService:
@@ -235,6 +236,64 @@ class TransactionService:
 
         return results
 
+    def summary_month(
+        self,
+        month: str,
+        top: int = 3,
+    ) -> dict:
+        """월별 수입, 지출, 잔액과 카테고리별 지출을 계산한다."""
+
+        # 월 형식 검증
+        try:
+            parsed_month = date.fromisoformat(month + "-01")
+        except ValueError:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            ) from None
+
+        if parsed_month.strftime("%Y-%m") != month:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            )
+
+        if top <= 0:
+            raise ValueError("top은 1 이상의 정수여야 합니다.")
+
+        total_income = 0
+        total_expense = 0
+        category_expenses: dict[str, int] = {}
+        count = 0
+
+        for transaction in self.repository.iter_transactions():
+            if transaction.date[:7] != month:
+                continue
+
+            count += 1
+
+            if transaction.type == "income":
+                total_income += transaction.amount
+            else:
+                total_expense += transaction.amount
+                category_expenses[transaction.category] = (
+                    category_expenses.get(transaction.category, 0)
+                    + transaction.amount
+                )
+
+        top_categories = sorted(
+            category_expenses.items(),
+            key=lambda item: item[1],
+            reverse=True,
+        )[:top]
+
+        return {
+            "month": month,
+            "count": count,
+            "total_income": total_income,
+            "total_expense": total_expense,
+            "balance": total_income - total_expense,
+            "top_categories": top_categories,
+        }
+
 class CategoryService:
     def __init__(self, repository: CategoryRepository):
         self.repository = repository
@@ -273,3 +332,45 @@ class CategoryService:
 
         if not self.repository.remove(name):
             raise ValueError(f"존재하지 않는 카테고리입니다: {name}")
+
+class BudgetService:
+    def __init__(self, repository: BudgetRepository):
+        self.repository = repository
+
+    def set_budget(self, month: str, amount: int) -> None:
+        """월별 예산을 검증하고 저장한다."""
+
+        # 월 형식 검증
+        try:
+            parsed_month = date.fromisoformat(month + "-01")
+        except ValueError:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            ) from None
+
+        if parsed_month.strftime("%Y-%m") != month:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            )
+
+        if amount <= 0:
+            raise ValueError("예산은 1원 이상이어야 합니다.")
+
+        self.repository.set_budget(month, amount)
+
+    def get_budget(self, month: str) -> int | None:
+        """특정 월의 예산을 조회한다."""
+
+        try:
+            parsed_month = date.fromisoformat(month + "-01")
+        except ValueError:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            ) from None
+
+        if parsed_month.strftime("%Y-%m") != month:
+            raise ValueError(
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+            )
+
+        return self.repository.get_amount(month)

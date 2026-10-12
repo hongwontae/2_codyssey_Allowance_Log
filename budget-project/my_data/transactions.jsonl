@@ -1,3 +1,4 @@
 {"id": "TX-000001", "type": "income", "date": "2020-02-02", "amount": 10000, "category": "zoo", "memo": "ko", "tags": ["ko"]}
 {"id": "TX-000002", "type": "expense", "date": "2026-10-11", "amount": 7000, "category": "zoo", "memo": "동물원 간식", "tags": ["snack"]}
-{"id": "TX-000003", "type": "income", "date": "2026-10-12", "amount": 50000, "category": "zoo", "memo": "용돈", "tags": ["pocket"]}
+{"id": "TX-000003", "type": "income", "date": "2026-10-12", "amount": 50000, "category": "zoo", "memo": "수정 테스트", "tags": ["pocket"]}
+{"id": "TX-000004", "type": "income", "date": "2020-02-02", "amount": 102020, "category": "zoo", "memo": "sl;dl", "tags": [";laksd"]}

@@ -6,6 +6,8 @@ Python과 파일 입출력을 활용한 콘솔 기반 가계부 프로그램입�
 
 수입과 지출을 기록하고, 거래 검색 및 수정·삭제, 월별 요약, 예산 관리, 카테고리 관리, CSV 가져오기·내보내기 기능을 제공합니다.
 
+데이터를 JSONL 파일에 영구 저장하며, 제너레이터를 활용한 스트리밍 처리와 데코레이터를 통한 공통 기능 분리로 유지보수하기 쉬운 구조를 목표로 구현했습니다.
+
 ## 2. 개발 환경
 
 - Python 3.10 이상
@@ -21,6 +23,7 @@ budget-project/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py
+│   ├── decorators.py
 │   ├── models.py
 │   ├── repository.py
 │   └── services.py
@@ -38,6 +41,7 @@ budget-project/
 - `repository.py`: 파일 저장 및 조회
 - `services.py`: 거래, 카테고리, 예산 관련 비즈니스 로직
 - `cli.py`: 명령어와 사용자 입력 처리
+- `decorators.py`: 로그 및 실행 시간 측정 등 공통 기능
 - `__main__.py`: 프로그램 실행 진입점
 - `tests/`: 자동 테스트 코드
 
@@ -45,9 +49,65 @@ budget-project/
 
 프로젝트 루트 디렉터리에서 실행합니다.
 
+### 도움말 확인
+
 ```bash
 python -m budget_app --help
 ```
+
+### 거래 목록 조회
+
+```bash
+python -m budget_app list
+```
+
+### 거래 추가
+
+```bash
+python -m budget_app add
+```
+
+거래 추가는 대화형 입력 방식으로 진행됩니다.
+
+### 거래 검색
+
+```bash
+python -m budget_app search --category food
+```
+
+### 월별 요약
+
+```bash
+python -m budget_app summary --month 2026-10 --top 3
+```
+
+### 예산 설정
+
+```bash
+python -m budget_app budget set --month 2026-10 --amount 100000
+```
+
+### 거래 수정 및 삭제
+
+수정할 필드만 옵션으로 지정합니다.
+
+```bash
+python -m budget_app update --id TX-000001 --memo "점심 수정"
+```
+
+```bash
+python -m budget_app delete --id TX-000001
+```
+
+### 카테고리 관리
+
+```bash
+python -m budget_app category list
+python -m budget_app category add
+python -m budget_app category remove
+```
+
+### 데이터 저장 경로 변경
 
 기본 저장 폴더는 `./data`이며, `--data-dir` 옵션으로 변경할 수 있습니다.
 
@@ -60,12 +120,12 @@ python -m budget_app --data-dir ./my_data list
 | 명령어 | 기능 |
 | --- | --- |
 | `add` | 거래 추가 |
-| `list` | 거래 목록 조회 |
+| `list` | 최신순 거래 목록 조회 |
 | `search` | 조건별 거래 검색 |
-| `summary` | 월별 수입·지출 요약 |
-| `budget` | 월별 예산 설정 및 조회 |
-| `category` | 카테고리 관리 |
-| `update` | 거래 수정 |
+| `summary` | 월별 수입·지출 및 잔액 요약 |
+| `budget` | 월별 예산 설정 |
+| `category` | 카테고리 추가·조회·삭제 |
+| `update` | 기존 거래 수정 |
 | `delete` | 거래 삭제 |
 | `import` | CSV 거래 가져오기 |
 | `export` | CSV 거래 내보내기 |
@@ -83,7 +143,7 @@ CSV 파일은 UTF-8 인코딩과 헤더를 사용합니다.
 | `memo` | 선택 | 거래 메모 |
 | `tags` | 선택 | 쉼표로 구분한 태그 |
 
-예시:
+### CSV 예시
 
 ```csv
 date,type,category,amount,memo,tags
@@ -91,19 +151,27 @@ date,type,category,amount,memo,tags
 2026-10-11,income,salary,100000,용돈,income
 ```
 
-CSV 가져오기:
+### CSV 가져오기
 
 ```bash
 python -m budget_app import --from import.csv
 ```
 
-CSV 내보내기:
+### CSV 내보내기
+
+월을 기준으로 내보내기:
 
 ```bash
 python -m budget_app export --out export.csv --month 2026-10
 ```
 
-잘못된 거래 행이나 중복 거래는 건너뛸 수 있으며, 처리 결과에서 등록 및 건너뛴 건수를 확인합니다.
+기간을 기준으로 내보내기:
+
+```bash
+python -m budget_app export --out export.csv --from 2026-10-01 --to 2026-10-31
+```
+
+가져오기 과정에서 잘못된 거래 행이나 중복 거래를 처리하며, 결과에서 등록 및 건너뛴 건수를 확인할 수 있습니다.
 
 ## 7. 데이터 저장
 

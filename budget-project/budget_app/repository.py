@@ -20,18 +20,39 @@ class TransactionRepository:
         self.file_path.touch(exist_ok=True)
 
     def iter_transactions(self) -> Iterator[Transaction]:
-        """거래 내역을 한 건씩 읽어 반환한다."""
-        with self.file_path.open("r", encoding="utf-8") as file:
-            for line in file:
-                # 빈 줄은 건너뛴다.
-                if not line.strip():
-                    continue
+        """거래 내역을 한 건씩 읽는다."""
 
-                # JSON 문자열 -> Python 딕셔너리
-                data = json.loads(line)
+        try:
+            with self.file_path.open("r", encoding="utf-8") as file:
+                for line_number, line in enumerate(file, start=1):
+                    if not line.strip():
+                        continue
 
-                # 딕셔너리 -> Transaction 객체
-                yield Transaction(**data)
+                    try:
+                        data = json.loads(line)
+
+                        if not isinstance(data, dict):
+                            raise ValueError(
+                                "거래 데이터는 JSON 객체여야 합니다."
+                            )
+
+                        transaction = Transaction(**data)
+
+                    except (json.JSONDecodeError, TypeError, KeyError, ValueError):
+                        raise ValueError(
+                            f"거래 파일 {self.file_path}의 "
+                            f"{line_number}번째 줄이 올바르지 않습니다. "
+                            "JSON 형식과 거래 필드를 확인하세요."
+                        ) from None
+
+                    yield transaction
+
+        except UnicodeDecodeError:
+            raise ValueError(
+                f"거래 파일 {self.file_path}의 문자 인코딩이 올바르지 않습니다. "
+                "UTF-8 파일인지 확인하세요."
+            ) from None
+
     
     def add(self, transaction: Transaction) -> None:
         """거래 한 건을 JSONL 파일에 추가한다."""
@@ -63,69 +84,104 @@ class TransactionRepository:
                 ).encode("utf-8")
             )
             
+
     def delete(self, transaction_id: str) -> bool:
         """ID에 해당하는 거래를 삭제한다."""
+
         temp_path = self.file_path.with_suffix(".tmp")
         found = False
 
-        with self.file_path.open("r", encoding="utf-8") as source:
-            with temp_path.open("w", encoding="utf-8") as target:
-                for line in source:
-                    if not line.strip():
-                        continue
+        try:
+            with self.file_path.open("r", encoding="utf-8") as source:
+                with temp_path.open("w", encoding="utf-8") as target:
+                    for line_number, line in enumerate(source, start=1):
+                        if not line.strip():
+                            continue
 
-                    data = json.loads(line)
+                        try:
+                            data = json.loads(line)
 
-                    if data["id"] == transaction_id:
-                        found = True
-                        continue
+                            if not isinstance(data, dict) or "id" not in data:
+                                raise ValueError("거래 데이터에 id가 없습니다.")
 
-                    target.write(
-                        json.dumps(data, ensure_ascii=False) + "\n"
-                    )
+                        except (json.JSONDecodeError, ValueError):
+                            raise ValueError(
+                                f"거래 파일의 {line_number}번째 줄이 "
+                                "손상되었습니다. 파일을 확인하세요."
+                            ) from None
 
-        if not found:
+                        if data["id"] == transaction_id:
+                            found = True
+                            continue
+
+                        target.write(
+                            json.dumps(data, ensure_ascii=False) + "\n"
+                        )
+
+            if not found:
+                return False
+
+            # 임시 파일 작성이 성공한 경우에만 원본 교체
+            temp_path.replace(self.file_path)
+            return True
+
+        finally:
+            # 성공적으로 교체했다면 파일이 이미 없어졌으므로 아무 일도 하지 않음
+            # 실패했다면 남은 임시 파일을 정리
             temp_path.unlink(missing_ok=True)
-            return False
 
-        temp_path.replace(self.file_path)
-        return True
 
     def update(self, transaction: Transaction) -> bool:
         """기존 거래를 수정한다. 대상 ID가 없으면 False를 반환한다."""
+
         temp_path = self.file_path.with_suffix(".tmp")
         found = False
 
-        with self.file_path.open("r", encoding="utf-8") as source:
-            with temp_path.open("w", encoding="utf-8") as target:
-                for line in source:
-                    if not line.strip():
-                        continue
+        try:
+            with self.file_path.open("r", encoding="utf-8") as source:
+                with temp_path.open("w", encoding="utf-8") as target:
+                    for line_number, line in enumerate(source, start=1):
+                        if not line.strip():
+                            continue
 
-                    data = json.loads(line)
+                        try:
+                            data = json.loads(line)
 
-                    if data["id"] == transaction.id:
-                        data = {
-                            "id": transaction.id,
-                            "type": transaction.type,
-                            "date": transaction.date,
-                            "amount": transaction.amount,
-                            "category": transaction.category,
-                            "memo": transaction.memo,
-                            "tags": transaction.tags or [],
-                        }
-                        found = True
+                            if not isinstance(data, dict) or "id" not in data:
+                                raise ValueError("거래 데이터에 id가 없습니다.")
 
-                    target.write(
-                        json.dumps(data, ensure_ascii=False) + "\n"
-                    )
+                        except (json.JSONDecodeError, ValueError):
+                            raise ValueError(
+                                f"거래 파일의 {line_number}번째 줄이 "
+                                "손상되었습니다. 파일을 확인하세요."
+                            ) from None
 
-        if not found:
+                        if data["id"] == transaction.id:
+                            data = {
+                                "id": transaction.id,
+                                "type": transaction.type,
+                                "date": transaction.date,
+                                "amount": transaction.amount,
+                                "category": transaction.category,
+                                "memo": transaction.memo,
+                                "tags": transaction.tags or [],
+                            }
+                            found = True
+
+                        target.write(
+                            json.dumps(data, ensure_ascii=False) + "\n"
+                        )
+
+            if not found:
+                return False
+
+            # 모든 줄을 정상적으로 작성한 뒤에만 원본 교체
+            temp_path.replace(self.file_path)
+            return True
+
+        finally:
             temp_path.unlink(missing_ok=True)
-            return False
 
-        temp_path.replace(self.file_path)
-        return True
 
 class CategoryRepository:
     def __init__(self, file_path: Path):

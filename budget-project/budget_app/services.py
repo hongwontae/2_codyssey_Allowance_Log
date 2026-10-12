@@ -7,6 +7,8 @@ from budget_app.repository import TransactionRepository
 from budget_app.repository import CategoryRepository
 from budget_app.repository import BudgetRepository
 
+from budget_app.decorators import measure_time
+
 
 class TransactionService:
     def __init__(self, repository: TransactionRepository, category_repository: CategoryRepository):
@@ -236,6 +238,7 @@ class TransactionService:
 
         return results
 
+    @measure_time
     def summary_month(
         self,
         month: str,

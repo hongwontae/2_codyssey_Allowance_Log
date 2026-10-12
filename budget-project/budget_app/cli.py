@@ -1,6 +1,8 @@
 
 import argparse
 from pathlib import Path
+import heapq
+
 
 from budget_app.repository import (
     TransactionRepository,
@@ -21,6 +23,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         prog="budget_app",
         description="파일 기반 콘솔 가계부"
+    )
+
+    # 데이터 저장 폴더 옵션
+    parser.add_argument(
+        "--data-dir",
+        default="data",
+        help="데이터 저장 폴더 경로 (기본값: data)"
     )
 
     subparsers = parser.add_subparsers(
@@ -255,7 +264,7 @@ def main() -> int:
     args = parser.parse_args()
 
     # 저장소 및 서비스 초기화
-    data_dir = Path("data")
+    data_dir = Path(args.data_dir)
 
     transaction_repository = TransactionRepository(
         data_dir / "transactions.jsonl"
@@ -497,34 +506,41 @@ def main() -> int:
             return 1
 
     # list 명령어 처리
+# list 명령어 처리
     if args.command == "list":
         if args.limit <= 0:
             print("[오류] --limit은 1 이상의 정수여야 합니다.")
             return 1
 
-        transactions = sorted(
-            transaction_repository.iter_transactions(),
-            key=lambda transaction: (
-                transaction.date,
-                transaction.id
-            ),
-            reverse=True,
-        )
-
-        count = 0
-
-        for transaction in transactions[:args.limit]:
-            print(
-                f"{transaction.id} | {transaction.date} | "
-                f"{transaction.type} | {transaction.category} | "
-                f"{transaction.amount} | {transaction.memo}"
+        try:
+            # 기존에 적용한 스트리밍 개선 코드를 유지
+            transactions = heapq.nlargest(
+                args.limit,
+                transaction_repository.iter_transactions(),
+                key=lambda transaction: (
+                    transaction.date,
+                    transaction.id,
+                ),
             )
-            count += 1
 
-        if count == 0:
-            print("거래 내역이 없습니다.")
+            count = 0
 
-        return 0
+            for transaction in transactions:
+                print(
+                    f"{transaction.id} | {transaction.date} | "
+                    f"{transaction.type} | {transaction.category} | "
+                    f"{transaction.amount} | {transaction.memo}"
+                )
+                count += 1
+
+            if count == 0:
+                print("거래 내역이 없습니다.")
+
+            return 0
+
+        except (ValueError, OSError) as error:
+            print(f"[오류] {error}")
+            return 1
 
         # export 명령어 처리
     
@@ -658,8 +674,6 @@ def main() -> int:
                     "type",
                     "category",
                     "amount",
-                    "memo",
-                    "tags",
                 }
 
                 if not reader.fieldnames or not required_columns.issubset(
@@ -667,7 +681,7 @@ def main() -> int:
                 ):
                     raise ValueError(
                         "CSV 헤더가 올바르지 않습니다. "
-                        "date,type,category,amount,memo,tags 열이 필요합니다."
+                        "date,type,category,amount 열이 필요합니다."
                     )
 
                 for row in reader:

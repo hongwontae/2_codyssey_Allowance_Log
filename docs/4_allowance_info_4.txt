@@ -1,0 +1,106 @@
+budget 명령어 처리
+python3 -m budget_app -> budget_app의 __main__.py를 실행합니다.
+
+CLI -> 사용자가 입력한 명령어를 해석합니다. /Service -> 입력값을 검증하고 업무 규칙을 적용합니다. /Repository -> 실제 JSONL 파일에서 데이터를 읽고 저장합니다.
+
+
+1. python3 -m budget_app budget set --month 2026-10 --amount 300000
+    1-1. budget_parser = subparsers.add_parser ->  budget이라는 명령어 등록
+    1-2. budget_parser.add_subparsers -> budget 명령어 아래 또 다른 하위 명령어 등록할 수 있는 공간 만듬
+    1-3. budget get / set / test.. 이렇게 만들어낼 수 있는 구조입니다. -> 지금은 set만 존재
+    1-4. 그 set에 필수는 --month, --amount
+
+
+2. if args.command == "budget":
+    return handle_budget(args, budget_service)
+
+    2-1. python3 -m budget_app budget set.... -> args.commande가 budget입니다.
+    2-2. args에는 명령어의 옵션 값들이 존재합ㄴ다.
+    2-3. budget_service는 BudgetService 클래스를 통해서 만듣 객체입니다.
+    2-4. handle_budget은 command에 따른 처리 흐름 함수입니다. args와 service 객체를 인자로 받습니다.
+
+
+3. budget_service = BudgetService(budget_repository)
+    
+    3-1. budget_repository = BudgetRepository( data_dir / "budgets.jsonl")
+        => ./??/budgets.jsonl를 인자로 데려갑니다.
+    3-2. 클래스의 __init__을 통해 path를 초기화합니다. -> self.path는 /data/budgets.jsonl
+    3-3. self.file_path.parent는 /data를 폴더를 의미합니다.
+    3-4. mkdir는 폴더를 생성하는 함수입니다. parents=True, (받아온 path에서 없는 상위 폴더도 함께 생성) 
+        exist_ok=True, (폴더가 이미 존재하면 에러를 발생시키지 않고 넘김)
+    3-5. self.file_path.touch(exist_ok=True) -> 그 경로에 파일을 생성하는데 이미 존재하면 에러를 발생시키지 않고 넘깁니다.
+    3-6. 초기화가 완료되면 객체의 path에는 data/budgets.jsonl의 경로가 존재합니다.
+
+
+4. budget_service = BudgetService(budget_repository)
+    
+    4-1. BudgetService() 클래스를 호출해서 객체를 생성합니다. 인자로는 레파지토리 객체가 들어갑니다.
+    4-2. 그 객체 자체를 객체의 속성값으로 둡니다.
+
+
+5. handle_budget(args, budget_service)
+    
+    5-1. args.budget_command == "set"
+        => python3 -m budget_app budget set
+        => budget_service.set_budget(month=args.month, amount=args.amount) 실행합니다.
+    
+    5-2. def set_budget(self, month: str, amount: int) -> None:
+        => date.fromisoformat(month + "-01")
+        => date.fromisoformat()은 date 객체로 변환하는 함수이고 01를 붙여서 2026-01 -> 2026-01-01처럼 변환
+        => except문으로 예외처리합니다.
+    
+    5-3. if parsed_month.strftime("%Y-%m") != month
+        => strftime()은 날짜 객체를 원하는 형식의 문자열로 변환하는 함수입니다.
+        => %Y : 연도 4자리, %m : 월 2자리
+        => parsed_month = date(2026, 10, 1) parsed_month.strftime("%Y-%m") -> "2026-10"
+        => YYYY-MM 형식을 검증하는 것입니다.
+    
+    5-4. if amount <= 0:
+        => amount 에산은 최소 1원 이상이어야 합니다.
+    
+
+6. self.repository.set_budget(month, amount)
+    => 월별 예산을 파일에 저장하고, 같은 달의 예산을 다시 설정하면 기존 금액을 새로운 금액으로 바꾸는 기능입니다.
+
+    6-1. iter_budgets()
+        => with self.file_path.open("r", encoding="utf-8") as file:
+        => 파일을 읽기 모드로 인코딩 규칙은 utf-8 모드로 with -> 블록 벗어나면 close 자동, file 객체
+        => for line in file: -> 반복문은 첫 번째 줄을 line, 두 번쨰 반복에서 두 번쨰 줄 line..
+        => 만약 strip()으로 문자열을 압축했는데 아무것도 없다면 -> 다음으로 넘어갑니다.
+        => line의 모양은 "month": "2026-10", "amount": 5000 입니다.
+        => yield json.loads(line) -> python 객체로 변환합니다.
+        => yield는 값을 반환 -> 함수 실행 상태 유지 -> 다음 요청 떄 다음 yield 반환
+    
+    6-2. budgets = [ budget for budget in self.iter_budgets() if budget["month"] != month]
+        => 같은 달의 예산이 두 번 들어가는 것을 막는 컴프리헨션입니다.
+    
+    6-3. budgets.append({"month": month, "amount": amount,})
+        => 배열의 마지막 위치에 명령어로 받아온 값을 추가합니다.
+    
+    6-4. temp_path = self.file_path.with_suffix(".tmp")
+        => with_suffix는 경로에 존재하는 파일의 확장자를 변경하는 함수입니다.
+        => /data/budgets.tmp
+    
+    6-5 with temp_path.open("w", encoding="utf-8") as file:
+        => 임시 파일을 오픈
+    
+    6-6. for budget in budgets:
+                file.write(json.dumps(budget, ensure_ascii=False) + "\n")
+        => 배열의 요소를 돌여서 하나씩 전달합니다.
+        => json.dumps가 객체를 문자열로 변환합니다.그리고 개행문자와 결합합니다.
+        => 그리고 그 파일에 기록합니다.
+    
+    6-7. temp_path.replace(self.file_path)
+        => 임시 파일을 원래 파일 경로로 이동시켜 기존의 파일을 교체하는 함수입니다.
+    
+    6-8. finally:
+            temp_path.unlink(missing_ok=True)
+        => 임시 파일이 존재하면 삭제합니다.
+        => 이미 교체되어 임시 파일이 없어졌다면 오류 없이 넘어갑니다.
+
+
+    
+
+
+
+

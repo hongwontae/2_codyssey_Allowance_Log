@@ -96,7 +96,7 @@ def main() -> int:
         "--memo",
         help="수정할 메모"
     )
-    update_parser.add_argument(
+    update_parser.add_argument( 
         "--tags",
         help="수정할 태그 (쉼표로 구분)"
     )
@@ -107,6 +107,7 @@ def main() -> int:
         "list",
         help="거래 목록 조회"
     )
+
     list_parser.add_argument(
         "--limit",
         type=int,
@@ -267,6 +268,17 @@ def main() -> int:
         required=True,
         type=int,
         help="월 예산 금액",
+    )
+
+    budget_get_parser = budget_commands.add_parser(
+    "get",
+    help="월별 예산 조회",
+    )
+
+    budget_get_parser.add_argument(
+        "--month",
+        required=True,
+        help="조회할 월 (YYYY-MM)",
     )
 
     args = parser.parse_args()

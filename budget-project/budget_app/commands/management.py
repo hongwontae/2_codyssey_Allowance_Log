@@ -41,6 +41,13 @@ def handle_budget(args, budget_service):
                 f"[저장 완료] {args.month} 예산 "
                 f"{args.amount}원"
             )
+        elif args.budget_command == "get":
+            amount = budget_service.get_budget(args.month)
+
+            if amount is None:
+                print(f"[조회 결과] {args.month} 예산이 없습니다.")
+            else:
+                print(f"[조회 결과] {args.month} 예산 {amount}원")
 
         return 0
 

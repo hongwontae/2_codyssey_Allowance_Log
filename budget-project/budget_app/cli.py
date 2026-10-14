@@ -257,6 +257,11 @@ def main() -> int:
         help="월별 예산 설정",
     )
 
+    budget_get_parser = budget_commands.add_parser(
+    "get",
+    help="월별 예산 조회",
+    )
+
     budget_set_parser.add_argument(
         "--month",
         required=True,
@@ -268,11 +273,6 @@ def main() -> int:
         required=True,
         type=int,
         help="월 예산 금액",
-    )
-
-    budget_get_parser = budget_commands.add_parser(
-    "get",
-    help="월별 예산 조회",
     )
 
     budget_get_parser.add_argument(
@@ -294,6 +294,10 @@ def main() -> int:
         data_dir / "categories.jsonl"
     )
 
+    budget_repository = BudgetRepository(
+        data_dir / "budgets.jsonl"
+    )
+
     transaction_service = TransactionService(
         transaction_repository,
         category_repository,
@@ -303,9 +307,6 @@ def main() -> int:
         category_repository
     )
 
-    budget_repository = BudgetRepository(
-        data_dir / "budgets.jsonl"
-    )
 
     budget_service = BudgetService(
         budget_repository

@@ -1,0 +1,63 @@
+1. subparsers.add_parser("add", help="거래 추가")
+    => python3 -m budget_app add 명령어를 프로그램이 인식 가능
+
+
+2. args.command == "add"
+    => handle.add(args, transaction_service) 실행
+
+
+3. handle.add
+    3-1. 날짜, 타입, 카테고리, 금액, 메모, 태그를 받습니다.
+    3-2. 태그들은 tags = [ tag.strip() for tag in raw_tags.split(",") if tag.strip()]
+        => 태그들을 ,로 나누고 그 결과를 strip했는데 빈 문자열이나 공백이면 버리고 그 태그를 다시 정제
+    3-3. transaction_service.add_transaction를 호출합니다.
+
+
+4. TransactionService의 add_transaction
+    4-1. income, expense 타입을 검증해서 아니면 raise
+    4-2. categories = set(self.category_repository.iter_categories())
+        => set 함수는 중복된 값을 제거합니다. / 이터러블 모든 값을 가져와 집합을 만듭니다. -> yield 다 가져옴
+        => iter_categories는 파일을 열고 모든 카테고리를 전달합니다.
+    4-3. if category not in categories ..
+        => 입력된 값에 카테고리가 있는지 검사합니다.
+    4-4. 날짜 검증과 금액 0 | 양수 검증
+    
+    4-5. 거래 id를 생성합니다.
+        => existing_ids = [ transaction.id for transaction in self.repository.iter_transactions() ]
+        => iter_transactions는 모든 거래 내역을 읽고 한 건씩 yield 형식으로 전달
+        => 전달된 id만 모읍니다.
+    4-6. 그리고 이미 존재하는 ids의 개수 + 1를 임시 id로 지정합니다.
+    4-7. while transaction_id in existing_ids:
+        => existing_ids안에 transaction가 존재하면 실행합니다.
+
+
+5. self.repository.add(transaction)
+    5-1. transaction 객체를 data 객체로 변경합니다.
+    5-2. 파일을 엽니다.
+    5-3. JSONL 파일은 JSON 데이터 한 건을 한 줄에 저장합니다. -> 각 거래 줄바꿈 문자 \n으로 구분되어 있습니다.
+    5-4. rb+ -> 바이너리 모드로 열고 데이터를 바이트 단위로 처리할 수 있습니다. 이 떄 +는 읽기 쓰기 모두 허용
+        => 기존의 내용 지우지 않음
+
+        ** 파일을 바이너리로 읽을 떄 커서의 위치 개념 **
+            => hello 5byte 존재
+            => 0 h 1 e 2 l 3 l 4 o 5
+            => 이렇게 커서가 문자열을 가리키는게 아니라 사이사이의 공간을 target
+
+    5-5. file.seek(offset, whence)
+        => offset은 기준점에서 이동할 거리
+        => whence는 0, 1, 2중 하나를 사용해서 이동의 기준점을 지정합니다.
+        => 0은 파일의 시작, 1은 현재 파일 위치, 2는 파일의 끝
+        => file.seek(0, 2) -> 파일의 끝에 위치 
+        => text 모드로 열면 제약이 존재합니다.
+        => file.tell() -> 현재 파일의 커서 위치를 알려주는 함수입니다.
+        => 바이너리 모드로 열었기에 tell()의 커서 위치도 바이너리 크기를 알려줍니다.
+    5-6. if file_size > 0:
+        => 만약 파일 사이즈가 0보다 크다면 -> 파일에 내용이 기재되어 있다면
+    5-7. file.seek(-1, 2) / last_byte = file.read(1)
+        => 마지막 데이터를 읽습니다.
+    5-8. if last_byte != b"\n":
+        => b는 bytes 문자열을 만드는 문법입니다.
+        => 읽은 데이터는 바이트 형태 -> 바이트 형태로 비교해야 함
+    5-9. file.write(b"\n") 만약 \n이 아니라면 \n을 추가한다.
+    5-10. json.dump() + "\n" utf-8 형식으로 파일에 씁니다.
+

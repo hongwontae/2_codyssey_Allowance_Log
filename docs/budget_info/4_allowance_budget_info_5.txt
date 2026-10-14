@@ -1,0 +1,17 @@
+1. python3 -m budget_app budget get --month 2026-10
+
+2. handle_budget 실행
+    => budget_command == get
+    => budget_service.get_budget(args.amount) 실행
+
+
+3. get_budget
+    => fromisoformat -> 문자열을 날짜 객체로 변환하는데 2026-13 같은 걸 걸러줍니다.
+    => strftime -> 날짜 객체 형태가 yyyy-mm 형태인지 확인합니다.
+
+
+4. self.repository.get_amount
+    => 파일을 뒤져서 month에 해당하는 month을 찾고 amount return
+
+
+5. handle_budget에서 else 문에서 print 후 0 return

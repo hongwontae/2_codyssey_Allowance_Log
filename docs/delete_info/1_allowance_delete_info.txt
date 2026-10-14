@@ -1,0 +1,22 @@
+1. python3 -m budget_app delete --id ..
+
+
+2. handle_delete를 실행합니다.
+    => try에서 deleted = transaction_repository.delete(args.id)를 실행합니다.
+
+
+3. def delete(self, transaction_id: str) -> bool:
+    3-1. temp_path = self.file_path.with_suffix(".tmp")
+    3-2. temp_path는 self.file.path와 동일한 경로에 같은 이름이지만 확장자만 다른 파일 경로
+    3-3. 두 개의 파일을 엽니다. -> 하나는 진짜 파일, 하나는 .tmp 파일 -> 없으면 만듬
+    3-4. 한 줄씩 읽고 줄이고 없다면 continue
+    3-5. json.loads 객체화
+    3-6. if not isinstance(data, dict) or "id" not in data:
+        => 가져온 것이 객체인지, 그 안에 id가 존재하는지 확인
+    3-7. if data["id"] == transaction_id:
+        => 만약 가져온 id만 일치하는 data라면 continue로 write로 가지 않습니다.
+        => 만약 가져온 id와 다르다면 씁니다.
+    3-8. temp_path.replace(self.file_path) found가 있다면 교체
+    3-9. finally로 파일 정리
+    3-10. 교체 성공하면 true, 아니면 false
+    3-11. true라면 삭제 완료, false라면 해당되는 id없음

@@ -1,0 +1,11 @@
+1. category 분석
+
+
+2. category_parser = subparsers.add_parser("category", help..)
+    => 최상위 하위 명령어를 등록합니다.
+
+
+3. category_commands = category_parser.add_subparsers(..)
+    => category 명령어의 하위 명령어들을 관리하는 객체를 생성합니다.
+    => dest="category_command" -> 하위 명령어들의 속성 이름
+    

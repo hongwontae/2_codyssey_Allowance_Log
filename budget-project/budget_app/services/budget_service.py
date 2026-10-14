@@ -39,7 +39,7 @@ class BudgetService:
 
         if parsed_month.strftime("%Y-%m") != month:
             raise ValueError(
-                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-10"
+                "월은 YYYY-MM 형식이어야 합니다. 예: 2026-09"
             )
 
         return self.repository.get_amount(month)

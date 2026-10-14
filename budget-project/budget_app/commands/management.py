@@ -44,7 +44,7 @@ def handle_budget(args, budget_service):
         elif args.budget_command == "get":
             amount = budget_service.get_budget(args.month)
 
-            if amount is None:
+            if amount is None: 
                 print(f"[조회 결과] {args.month} 예산이 없습니다.")
             else:
                 print(f"[조회 결과] {args.month} 예산 {amount}원")
@@ -52,5 +52,5 @@ def handle_budget(args, budget_service):
         return 0
 
     except (ValueError, OSError) as error:
-        print(f"[오류] {error}")
+        print(f"[오류] {error} (handle_budget)")
         return 1

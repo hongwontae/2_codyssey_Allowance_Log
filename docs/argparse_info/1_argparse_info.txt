@@ -1,0 +1,26 @@
+1. argparse
+    => 터미널에서 프로그램을 실행할 떄 사용자가 입력한 명령와 옵션을 분석해 주는 파이썬 표준 라이브러리
+
+
+2. parser = argparse.ArgumentParser()
+    => 명령줄 인자를 분석할 객체를 생성합니다.
+
+3. parser.add_argument("", ..)
+    3-1. 사용자가 어떤 인자를 입력할 수 있는지 규칙을 등록하는 메서드입니다.
+    3-2. 첫 번쨰 인자는 문자열로 이름을 입력받는 옵션입니다. --name, --age
+    3-3. required=True -> 반드시 입력받아야 합니다.
+    3-4. type=int -> 입력값을 정수로 변환합니다.
+    3-5. default=20 -> 입력하지 않으면 기본값 20을 사용합니다.
+
+4. args = parser.parse_args()
+    => 터미널에서 전달된 인자를 받고 등록한 규칙에 따라 분석한 뒤 결과를 반환합니다.
+
+
+5. subparsers = parser.add_subparsers(dest="command", required = True);
+    5-1. 프로그램에 사용할 하위 명령어들을 등록하는 객체를 생성합니다.
+    5-2. 이제 subparsers.add_parser()를 통해 하위 명령어를 등록합니다.
+    5-3. delete_parser = subparsers.add_parser("delete", help..) 메서드를 호출해 객체를 생성합니다.
+    5-4. delete_parser.add_argument(..) 메서드를 사용해서 옵션을 줍니다.
+        => 이 떄 이 규칙은 delete 명령어에 국한됩니다.
+
+

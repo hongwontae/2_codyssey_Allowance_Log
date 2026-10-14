@@ -1,0 +1,31 @@
+1. python3 -m budget_app category add | list | remove를 사용할 수 있습니다.
+    => 명령어 구조 체계가 이렇게 잡혀있습니다.
+
+
+2. add
+    => if args.command == "category":
+    => args, category_service, transaction_repository를 인자로 받아서 handle_category를 실행합니다.
+
+
+3. if args.category_command == "add":
+    => add 명령어일 떄 실행됩니다.
+    => name = input("카테고리명: ").strip() -> 카테고리를 입력받고 양쪽 빈 공백을 지웁니다.
+
+
+4. category_service.add_category(name)
+    => 입력받은 name을 가지고 add_category를 실행합니다.
+
+
+5.  def add_category(self, name: str) -> None:
+    => name = name.strip() -> 다시 공백 제거
+    => if not name: -> 빈 이름이라면 예외 처리
+    => categories = set(self.repository.iter_categories())
+    => category를 하나씩 가져옵니다. -> set 이 떄 중복을 제거하고 이터레이터 전부를 가져옵니다.
+    => if name in categories: -> 만약 set 객체에 중복된 name이 있다면 예외 처리
+
+
+6. self.repository.add(name)
+    => 무결성 검증이 되었으니 파일을 열고 +\n을 통해 개행문자와 함께 저장합니다.
+    
+
+7. print(f"[저장 완료] category={name}")

@@ -27,14 +27,12 @@ class TransactionService:
         """기존 거래의 지정된 필드만 수정한다."""
 
         # 수정 대상 거래 찾기
-        transaction = next(
-            (
-                item
-                for item in self.repository.iter_transactions()
-                if item.id == transaction_id
-            ),
-            None,
-        )
+        transaction = None
+
+        for item in self.repository.iter_transactions():
+            if item.id == transaction_id:
+                transaction = item
+                break
 
         if transaction is None:
             raise ValueError(

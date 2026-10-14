@@ -48,9 +48,11 @@ def main() -> int:
     )
 
     # add 명령어
+    # info write
     subparsers.add_parser("add", help="거래 추가")
 
     # delete 명령어
+    # info write
     delete_parser = subparsers.add_parser(
         "delete",
         help="거래 삭제"
@@ -62,6 +64,7 @@ def main() -> int:
     )
 
     # update 명령어
+    # info write
     update_parser = subparsers.add_parser(
         "update",
         help="거래 수정"
@@ -215,6 +218,7 @@ def main() -> int:
     )    
 
     # category 명령어
+    # info write
     category_parser = subparsers.add_parser(
         "category",
         help="카테고리 관리"
@@ -242,6 +246,7 @@ def main() -> int:
 
 
     # budget 명령어
+    # info write
     budget_parser = subparsers.add_parser(
         "budget",
         help="월별 예산 관리",
@@ -314,10 +319,12 @@ def main() -> int:
 
 
     # budget 명령어 처리
+    # info write
     if args.command == "budget":
         return handle_budget(args, budget_service)
 
     # category 명령어 처리
+    # info write
     if args.command == "category":
         return handle_category(
             args,
@@ -326,6 +333,7 @@ def main() -> int:
         )
 
     # add 명령어 처리
+    # info write
     if args.command == "add":
         return handle_add(
             args,
@@ -333,6 +341,7 @@ def main() -> int:
         )
     
     # update 명령어 처리
+    # info write
     if args.command == "update":
         return handle_update(
             args,
@@ -340,6 +349,7 @@ def main() -> int:
         )
 
     # delete 명령어 처리
+    # info write
     if args.command == "delete":
         return handle_delete(
             args,

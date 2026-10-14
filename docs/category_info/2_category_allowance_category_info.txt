@@ -1,0 +1,24 @@
+1. ptyhon3 -m budget_app category list
+
+
+2. elif args.category_command == "list":
+
+
+3. categories = category_service.list_categories()
+
+
+4. def list_categories(self) -> list[str]:
+    return sorted(self.repository.iter_categories())
+    => sorted -> 데이터를 정렬한 새로운 리스트를 반환하는 함수
+    => iter_categories()는 하나씩 category를 반환합니다.
+    => sorted는 정렬하기 위해 이터레이터의 값을 끝까지 가져와서 처리합니다.
+
+
+5. 카테고리 리스트가 반환됩니다.
+
+
+6. if not categories:
+    => 카테고리가 빈 배열이라면 printf()로 등록된 카테고리 없습니다.
+
+
+7. 만약 존재하면 for문으로 출력

@@ -1,0 +1,30 @@
+1. python3 -m budget_app category remove
+
+
+2. elif args.category_command == "remove":
+    => name = input("삭제할 카테고리명: ").strip() -> 입력을 받고 공백 제거
+    => category_service.remove_category(name, transaction_repository,) 호출
+
+
+3.  def remove_category
+    => name = name.strip() -> 같은 작업
+    => if not name: -> 아무것도 없다면 raise
+
+
+4. for transaction in transaction_repository.iter_transactions():
+    => def iter_transactions(self) -> Iterator[Transaction]:
+    => 이를 통해 transactions.jsonl에 존재하는 모든 데이터를 가져옵니다.
+    => if transaction.category == name: -> 이름과 일치하는게 있다면
+    => 에러를 발생시키고 사용하는 카테고리를 삭제할 수 없다고 출력합니다.
+
+
+5. if not self.repository.remove(name):
+    => repository.remove
+    => categories = list(self.iter_categories()) -> 모든 카테고리를 가져와 list로 만듭니다.
+    => if name not in categories: -> 만약 일치하는게 없다면 False를 반환합니다.
+    => remaining = [category for category in categories if category != name]
+        => 삭제할 이름과 일치하지 않는것만 뽑아내서 정제합니다.
+    => temp_path = self.file_path.with_suffix(".tmp") -> 임시 파일 경로 생성
+    => with temp_path.open("w", encoding="utf-8") as file: -> 읽기 모드로 파일 열기
+    => remaining 데이터를 하나씩 한 줄로 저장합니다.
+    => 마지막에 replace 교체하고 true를 반환합니다.

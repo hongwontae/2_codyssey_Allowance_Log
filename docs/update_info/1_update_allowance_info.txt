@@ -1,0 +1,38 @@
+1. ptynon3 -m budget_app update --id xyz ...
+    => id는 필수입니다.
+    => --date, --type, --category, --amount, --memo, --tags는 자율입니다.
+
+
+2. if args.command == "update" :
+    => handle_update(args, transaction_service,)를 실행합니다.
+    => tags = [ tag.strip() for tag in args.tags.split(",") if tag.strip() ]
+    => ,로 나눈 요소 하나가 strip를 사용했을 떄 공백이라면 버리고 그렇지 않으면 살리고 strip()
+    => transaction_service.update_transaction를 호출합니다. -> 여기에 명령어로 받아온 모든 것 전달
+
+
+3. def update_transaction 실행합니다.
+    3-1. for item in self.repository.iter_transactions():
+        => 계속 돌려서 일치하는 값이 나오면 if item.id == transaction_id:
+        => transaction 변수에 그 값을 넣고 break;
+
+
+4. if transaction is None:
+    => 만약 못 찾았다면 존재하지 않은 거래 처리
+
+
+5. transaction_date if transaction_date is not None else transaction.date
+    => transaction_date가 none이 아니라면 -> 명령어에 입력한 값을 사용
+    => 만약 none이라면 기존의 값 사용
+    => 이러한 구조로 데이터를 붙여나갑니다.
+
+
+6. transaction()를 호출해서 객체로 생성
+
+
+7. if not self.repository.update(updated_transaction):
+    => temp_path = self.file_path.with_suffix(".tmp")를 생성합니다.
+    => with를 사용해서 진짜 파일, 가짜 파일을 엽니다.
+    => 파일에 모든 data를 돌립니다. -> 이 떄 받은 id와 비교해서 일치한다면 data list를 만듭니다.
+    => found = true로 만들고 임시 파일에 작성합니다.
+    => 그리고 교체하고 true 반환
+    => 마지막에 임시 파일 정리

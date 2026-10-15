@@ -190,12 +190,10 @@ def main() -> int:
     export_group = export_parser.add_mutually_exclusive_group(
         required=True
     )
-
     export_group.add_argument(
         "--month",
         help="내보낼 월 (YYYY-MM)"
     )
-
     export_group.add_argument(
         "--from",
         dest="date_from",
@@ -388,6 +386,7 @@ def main() -> int:
         )
 
     # export 명령어 처리
+    # info write
     if args.command == "export":
         return handle_export(
             args,

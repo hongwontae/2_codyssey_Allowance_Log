@@ -1,0 +1,68 @@
+1. python -m budget_app summary --month 2026-10 --top 1
+    => --top은 옵션입니다.
+    => --top이 없다면 default는 3입니다.
+
+
+2. handle_summary(args, t_service, b_service)
+
+
+3. @measure_time
+    def summary_month
+    3-1. @measure_time -> summary_month가 실행되는데 몇 초가 걸리는지 자동으로 측정하도록 만든 데코레이터
+        => decorator에서 start = perf_counter()를 실행합니다.
+        => try에서 return func(*args, **kwargs)를 실행합니다. -> func은 summary_month입니다.
+        => 실행이 끝나면 finally를 실행합니다. elapsed = perf_counter() - start
+        => 그리고 실행시간을 print합니다.
+    
+    3-2. parsed_month = date.fromisoformat(month + "-01")
+        => 날짜 검증 + 날짜 객체 생성
+    3-3. parsed_month.strftime("%Y-%m") != month:
+        => 형식 검증
+    3-4. if top <= 0:
+        => 가져올 top 개수 양수 검증
+    3-5. for transaction in self.repository.iter_transactions():
+        => transaction.jsonl 파일에서 한 줄씩 가져옵니다.
+    3-6. transaction.date[:7] -> 가져온 파일의 date 문자열 0~6까지 가져와서 month와 비교합니다.
+        => 맞다면 count+1
+    3-7. if transaction.type == "income":
+        => income에 해당된다면 total_income += transaction.amount
+    3-8. total_expense += transaction.amount
+        => 지출에 해당된다면 더하기
+    3-9. category_expenses[transaction.category] = 
+        ( category_expenses.get(transaction.category, 0) + transaction.amount )
+        => get은 지정한 키가 있다면 그 값을 반환하고 없으면 두 번쨰 인자로 전달한 값을 사용
+        => 누적합을 합니다.
+    3-10. top_categories = sorted(...)
+        => 카테고리 별 지출 금액을 큰 순서대로 정렬한 다음, 상위 top개만 잘라서 가져오는 것
+        => category_expenses.items(), -> 카테고리와 금액을 튜플로 전달
+        => key=lambda item: item[1], 이 떄 item[0]은 카테고리, item[1]은 금액
+        => 즉, 금액을 기준으로 오름차순 정렬
+        => [:top]으로 3개만 가져옵니다.
+
+
+4. command로 돌아가서 count가 0이면 print + retrun
+
+5. 월별 요약, 총수입, 총 지출, 잔액은 print
+
+6. budget_amount = budget_service.get_budget(args.month)
+    => 예산 확인 및 사용률 계산
+    => get_budget(self, month: str) 검증
+    => self.repository.get_amount(month) 실행
+
+
+7. for budget in self.iter_budgets():
+    => 특정 월에 맞는 예산을 찾으면 그 값을 return 합니다.
+
+
+8. if budget_amount is not None:
+    => budget_amount가 None이 아니라면
+    => usage_rate = 총 지출/총 예산 * 100
+    => 예산과, 예산 사용률을 print합니다.
+    => 만약 월 예산을 초과하면 경고 print
+
+
+9. print(f"\n지출 TOP {args.top}")
+
+10. 지출 내역이 없다면 print
+
+11. 있다면 하나씩 출력합니다.

@@ -106,6 +106,7 @@ def main() -> int:
 
 
     # list 명령어
+    # info write
     list_parser = subparsers.add_parser(
         "list",
         help="거래 목록 조회"
@@ -119,6 +120,7 @@ def main() -> int:
     )
 
     # search 명령어
+    # info write
     search_parser = subparsers.add_parser(
         "search",
         help="거래 검색"
@@ -155,6 +157,7 @@ def main() -> int:
     )
 
     # summary 명령어
+    # info write
     summary_parser = subparsers.add_parser(
         "summary",
         help="월별 요약"
@@ -172,6 +175,7 @@ def main() -> int:
     )    
 
     # export 명령어
+    # info write
     export_parser = subparsers.add_parser(
         "export",
         help="거래 내역 CSV 내보내기"
@@ -358,6 +362,7 @@ def main() -> int:
 
 
     # search 명령어 처리
+    # info write
     if args.command == "search":
         return handle_search(
             args,
@@ -365,6 +370,7 @@ def main() -> int:
         )
 
     # summary 명령어 처리
+    # info write
     if args.command == "summary":
         return handle_summary(
             args,
@@ -374,6 +380,7 @@ def main() -> int:
 
 
     # list 명령어 처리
+    # info write
     if args.command == "list":
         return handle_list(
             args,

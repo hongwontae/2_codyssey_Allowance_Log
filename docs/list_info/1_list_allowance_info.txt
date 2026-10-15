@@ -1,0 +1,32 @@
+1. python3 -m budget_app list --limit 2
+    => --limit는 옵션입니다. 
+
+
+2. if args.command == "list":
+    => handle_list()를 실행합니다.
+
+
+3. if args.limit <= 0:
+    => printf() / return 1
+
+
+4. heapq.nlargest(n, iterable, key=...)
+    => n : 몇개를 가져올지
+    => iterable : 데이터를 어디서 가져올지
+    => key : 어떤 기준으로 큰 값을 판단할지
+
+
+5. transactions = heapq.nlargest(
+            args.limit,
+            transaction_repository.iter_transactions(),
+            key=lambda transaction: (
+                transaction.date,
+                transaction.id,
+            ),
+        )
+    => limit 만큼 가져옵니다.
+    => iter_transactions()의 거래 객체를 하나씩 전달받습니다.
+    => nlargest()가 전달받은 거래의 정렬 기준을 비교해서 limit까지 리스트로 만듭니다.
+
+
+6. 그리고 그 리스트를 출력합니다. 리스트가 없다면 거래내역 없다고 print

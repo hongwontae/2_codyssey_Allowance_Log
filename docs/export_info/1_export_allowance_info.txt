@@ -1,0 +1,17 @@
+1. add_mutually_exclusive_group()
+    => export_group = parser.add_mutually_exclusive_group(required = True)
+    => 이를 사용하면 export_group.add_argument에 해당되는 옵션이 동시에 사용될 수 없습니다.
+
+
+2. 명령어 구조
+    => python3 -m budget_app --out export --month (--from) --to
+    => out은 필수 (파일 경로)
+    => --month나 --from은 둘 중 하나만 써야 하지만 둘 중 하나는 필수로 들어가야 합니다.
+    => -- to는 자율입니다.
+
+
+3. if args.command == "export":
+    => handle_export()를 실행합니다.
+
+
+4. 

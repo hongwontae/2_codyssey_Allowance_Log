@@ -53,7 +53,6 @@ class TransactionRepository:
                 "UTF-8 파일인지 확인하세요."
             ) from None
 
-    
     def add(self, transaction: Transaction) -> None:
         """거래 한 건을 JSONL 파일에 추가한다."""
         data = {
@@ -84,7 +83,6 @@ class TransactionRepository:
                 ).encode("utf-8")
             )
             
-
     def delete(self, transaction_id: str) -> bool:
         """ID에 해당하는 거래를 삭제한다."""
 
@@ -129,7 +127,6 @@ class TransactionRepository:
             # 성공적으로 교체했다면 파일이 이미 없어졌으므로 아무 일도 하지 않음
             # 실패했다면 남은 임시 파일을 정리
             temp_path.unlink(missing_ok=True)
-
 
     def update(self, transaction: Transaction) -> bool:
         """기존 거래를 수정한다. 대상 ID가 없으면 False를 반환한다."""
@@ -178,7 +175,7 @@ class TransactionRepository:
             # 모든 줄을 정상적으로 작성한 뒤에만 원본 교체
             temp_path.replace(self.file_path)
             return True
-
+        
         finally:
             temp_path.unlink(missing_ok=True)
 

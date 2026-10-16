@@ -29,6 +29,8 @@
     4-6. 그리고 이미 존재하는 ids의 개수 + 1를 임시 id로 지정합니다.
     4-7. while transaction_id in existing_ids:
         => existing_ids안에 transaction가 존재하면 실행합니다.
+    4-8. transaction_id = f"TX-{next_id:06d}"
+        => 06d는 정수를 6자리로 표현하고 부족한 자릿수는 0으로 표현하라
 
 
 5. self.repository.add(transaction)

@@ -314,7 +314,6 @@ def main() -> int:
         category_repository
     )
 
-
     budget_service = BudgetService(
         budget_repository
     )
@@ -401,7 +400,7 @@ def main() -> int:
         )
 
     return 0
-
+ 
 
 if __name__ == "__main__":
     raise SystemExit(main())

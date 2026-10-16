@@ -5,3 +5,6 @@
 {"id": "TX-000006", "type": "expense", "date": "2026-10-09", "amount": 3000, "category": "food", "memo": "커피", "tags": ["cafe"]}
 {"id": "TX-000007", "type": "expense", "date": "2026-10-09", "amount": 1500, "category": "transport", "memo": "버스 요금", "tags": ["bus"]}
 {"id": "TX-000008", "type": "income", "date": "2026-10-26", "amount": 10000, "category": "food", "memo": "많이 벌었다.", "tags": ["?"]}
+{"id": "TX-000009", "type": "income", "date": "2022-09-20", "amount": 10000, "category": "food", "memo": "tags", "tags": ["mhello", "hello"]}
+{"id": "TX-000010", "type": "expense", "date": "2026-10-11", "amount": 7000, "category": "food", "memo": "동물원 간식", "tags": ["snack"]}
+{"id": "TX-000011", "type": "income", "date": "2026-10-12", "amount": 50000, "category": "food", "memo": "용돈", "tags": ["pocket"]}
